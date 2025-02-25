@@ -40,11 +40,11 @@ class MazeGame:
             (6,6),(7,1),(7,4)
         ]
         self.traps = [
-            (3,5),(0,3),(5,6) 
+            (3,5),(0,3),(5,6),(7,3)
         ]
         # 增加移动陷阱，并确保它们不会完全封死路径
         self.moving_traps = [
-            {'pos': (6, 3), 'dir': 0},  # 垂直移动
+            {'pos': (7, 3), 'dir': 0},  # 垂直移动
             {'pos': (5, 6), 'dir': 1}   # 水平移动
         ]
         self.start = (0, 0)
@@ -72,34 +72,21 @@ class MazeGame:
     def move_traps(self):
         for trap in self.moving_traps:
             row, col = trap['pos']
-        
-        # 垂直移动：沿y轴方向
-            if trap['dir'] == 0:  # 垂直方向移动
-                new_row = row + 1 if row < GRID_SIZE - 1 else row - 1
-                if new_row != row:  # 确保陷阱的位置变化了
-                # 确保新位置不与墙壁或其他陷阱重叠
-                   if (new_row, col) not in self.walls and (new_row, col) not in [t['pos'] for t in self.moving_traps]:
-                        trap['pos'] = (new_row, col)
+
+            if trap['dir'] == 0:  # 垂直移动（上下）
+                new_row = row + 1 if row + 1 < GRID_SIZE else row - 1  # 默认向下
+                if (new_row, col) in self.walls or any(t['pos'] == (new_row, col) for t in self.moving_traps):
+                    trap['dir'] = 1  # 遇到墙壁或陷阱，改为水平移动
                 else:
-                       continue  # 如果新位置无效，则跳过此步
-            
-            # 如果到达边界，改变方向
-                if new_row in [0, GRID_SIZE - 1]:
-                    trap['dir'] = 1  # 改为水平方向移动
-        
-        # 水平移动：沿x轴方向
-            elif trap['dir'] == 1:  # 水平方向移动
-                new_col = col + 1 if col < GRID_SIZE - 2 else col - 1
-                if new_col != col:  # 确保陷阱的位置变化了
-                # 确保新位置不与墙壁或其他陷阱重叠
-                    if (row, new_col) not in self.walls and (row, new_col) not in [t['pos'] for t in self.moving_traps]:
-                        trap['pos'] = (row, new_col)
-                    else:
-                        continue  # 如果新位置无效，则跳过此步
-            
-            # 如果到达边界，改变方向
-                if new_col in [0, GRID_SIZE - 1]:
-                    trap['dir'] = 0  # 改为垂直方向移动
+                    trap['pos'] = (new_row, col)
+
+            elif trap['dir'] == 1:  # 水平移动（左右）
+                new_col = col + 1 if col + 1 < GRID_SIZE else col - 1  # 默认向右
+                if (row, new_col) in self.walls or any(t['pos'] == (row, new_col) for t in self.moving_traps):
+                    trap['dir'] = 0  # 遇到墙壁或陷阱，改为垂直移动
+                else:
+                    trap['pos'] = (row, new_col)
+
 
 
     def step(self, action):
